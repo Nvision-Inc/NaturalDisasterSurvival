@@ -764,7 +764,7 @@ AddRightSwitch("Anti fling", function(enabled)
 
                             part.CanCollide = false
                         end
-                    en
+					end
                 end
             end
         end)
