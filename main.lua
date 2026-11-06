@@ -1,6 +1,3 @@
--- GUI-only template (callbacks are empty stubs; fill in your own logic)
--- Requires the UiEngineV2 library used by the original script.
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -92,6 +89,7 @@ Row1:AddButton("Tptool", function()
     local Tool = Instance.new("Tool")
     Tool.RequiresHandle = false
     Tool.Name = "Teleport Tool"
+	    Tool.ToolTip = "Click to tp ahh yes tp!! KnifeOrzZ Op"
 
     Tool.Activated:Connect(function()
         local v36 = Mouse.Hit.Position + Vector3.new(0, 2.5, 0)
@@ -107,7 +105,27 @@ Row1:AddButton("Tptool", function()
 end)
 
 	
-	
+	local CrouchExecuted = false
+
+Row1:AddButton("Crouch", function()
+    if CrouchExecuted then
+        return
+    end
+
+    CrouchExecuted = true
+
+    task.spawn(function()
+        local Success, Error = pcall(function()
+            loadstring(game:HttpGet(
+                "https://rawscripts.net/raw/Universal-Script-FE-R15-Crouch-Script-64510"
+            ))()
+        end)
+
+        if not Success then
+            warn("[Crouch Error]: " .. tostring(Error))
+        end
+    end)
+end)
 	
 local InfiniteJumpConnection
 
@@ -420,7 +438,7 @@ end),
 	HRP.CFrame = CFrame.new(-4.4140625, 120.400024, 25.5)
 	end),
 		
-	Folder:AddButton("Crane", function()
+	Folder:AddButton("Prison", function()
 		-- TODO
 	end),
 	Folder:AddButton("Train", function()
@@ -622,6 +640,140 @@ end),
 
 }
 
+--// COMBINED STATS LABEL
+
+local RunService = game:GetService("RunService")
+
+local StatsLabel = Scripts:AddLabel(
+    "Survivals: --    Survivors: 0    FPS: 0    Ping: 0 ms"
+)
+
+--// FPS COUNTER
+local Frames = 0
+local FPS = 0
+local LastUpdate = tick()
+
+RunService.RenderStepped:Connect(function()
+    Frames += 1
+
+    local Now = tick()
+
+    if Now - LastUpdate >= 1 then
+        FPS = Frames
+        Frames = 0
+        LastUpdate = Now
+    end
+end)
+
+--// NUMBER READER
+local function GetNumber(Text)
+    return tonumber(Text:gsub(",", ""):match("%d+"))
+end
+
+--// FIND SURVIVALS
+local function FindSurvivals()
+    local Billboard = workspace:FindFirstChild("BillboardTop10")
+    local Board = Billboard and Billboard:FindFirstChild("Board")
+
+    if not Board then return nil end
+
+    local UsernameObject
+
+    for _, Obj in ipairs(Board:GetDescendants()) do
+        if Obj:IsA("TextLabel") or Obj:IsA("TextButton") then
+            if Obj.Text:lower():find(LocalPlayer.Name:lower(), 1, true) then
+                UsernameObject = Obj
+                break
+            end
+        end
+    end
+
+    if not UsernameObject then return nil end
+
+    local Row = UsernameObject.Parent
+    local BestValue
+
+    for Depth = 1, 3 do
+        if not Row then break end
+
+        for _, Obj in ipairs(Row:GetDescendants()) do
+            if (Obj:IsA("TextLabel") or Obj:IsA("TextButton"))
+                and Obj ~= UsernameObject then
+
+                local Value = GetNumber(Obj.Text)
+
+                if Value and Value > 10 then
+                    if not BestValue or Value > BestValue then
+                        BestValue = Value
+                    end
+                end
+            end
+        end
+
+        if BestValue then break end
+        Row = Row.Parent
+    end
+
+    return BestValue
+end
+
+--// UPDATE ALL STATS
+task.spawn(function()
+    while task.wait(1) do
+
+        -- Survivals
+        local SurvivalValue = FindSurvivals() or "--"
+
+        -- Survivors
+        local ContentModel = workspace:FindFirstChild("ContentModel")
+        local SurvivorFolder = ContentModel and ContentModel:FindFirstChild("Survivers")
+        local SurvivorCount = SurvivorFolder and #SurvivorFolder:GetChildren() or 0
+
+        -- Ping
+        local Ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
+
+        local PingColor
+
+        if Ping <= 100 then
+            PingColor = "0, 255, 0"
+        elseif Ping <= 200 then
+            PingColor = "255, 255, 0"
+        elseif Ping <= 300 then
+            PingColor = "255, 165, 0"
+        else
+            PingColor = "255, 0, 0"
+        end
+
+        -- Update label
+        StatsLabel:Update(
+            'Survivals: <font color="rgb(255, 0, 0)">' ..
+            tostring(SurvivalValue) ..
+            '</font>' ..
+
+            string.rep(" ", 6) ..
+
+            'Survivors: <font color="rgb(0, 255, 68)">' ..
+            tostring(SurvivorCount) ..
+            '</font>' ..
+
+            string.rep(" ", 6) ..
+
+            'FPS: <font color="rgb(255, 255, 0)">' ..
+            tostring(FPS) ..
+            '</font>' ..
+
+            string.rep(" ", 6) ..
+
+            'Ping: <font color="rgb(' .. PingColor .. ')">' ..
+            tostring(Ping) .. ' ms</font>'
+        )
+    end
+end)
+
+
+
+
+
 -- The buttons live in the folder's content frame, so make a row inside that frame
 local Objects = Buttons[1].Parent
 
@@ -701,7 +853,7 @@ local function earthquake()
     end
 end
 
-AddRightSwitch("Reduce Earthquake", function(enabled)
+AddRightSwitch("Remove Earthquake", function(enabled)
     if DisableMeteor then
         DisableMeteor:Disconnect()
         DisableMeteor = nil
@@ -713,7 +865,7 @@ AddRightSwitch("Reduce Earthquake", function(enabled)
 end)
 
 
-AddRightSwitch("Reduce effects", function(enabled)
+AddRightSwitch("Remove effects", function(enabled)
     local PlayerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
     if enabled then
@@ -764,7 +916,7 @@ AddRightSwitch("Anti fling", function(enabled)
 
                             part.CanCollide = false
                         end
-					end
+                    end
                 end
             end
         end)
@@ -812,7 +964,108 @@ AddRightSwitch("Anti AFK", function(state)
     end
 end)
 
-AddRightSwitch("Right switch 6", function(enabled) end)
+
+--// INVISIBLE FEATURE
+
+if _G.a then
+	for _, v in pairs(_G.a) do
+		if v then
+			v:Disconnect()
+		end
+	end
+	_G.a = nil
+end
+
+repeat task.wait() until game.Players.LocalPlayer
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+local Character
+local Humanoid
+local HumanoidRootPart
+
+local u7 = false
+local t1 = {}
+
+local function v9()
+	Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	Humanoid = Character:WaitForChild("Humanoid")
+	HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+	t1 = {}
+
+	for _, descendant in pairs(Character:GetDescendants()) do
+		if descendant:IsA("BasePart") and descendant.Transparency == 0 then
+			table.insert(t1, descendant)
+		end
+	end
+end
+
+local function SetInvisible(enabled)
+	u7 = enabled
+
+	for _, v in pairs(t1) do
+		if v and v.Parent then
+			v.Transparency = enabled and 0.5 or 0
+		end
+	end
+end
+
+--// RIGHT SWITCH
+AddRightSwitch("Invisible", function(enabled)
+	SetInvisible(enabled)
+end)
+
+--// CONNECTIONS
+local a = {}
+
+a[1] = LocalPlayer:GetMouse().KeyDown:Connect(function(key)
+	if key:lower() ~= "g" then
+		return
+	end
+
+	SetInvisible(not u7)
+end)
+
+a[2] = RunService.Heartbeat:Connect(function()
+	if not u7 then
+		return
+	end
+
+	if not HumanoidRootPart or not Humanoid then
+		return
+	end
+
+	local originalCFrame = HumanoidRootPart.CFrame
+	local originalCameraOffset = Humanoid.CameraOffset
+
+	local cFrame = originalCFrame * CFrame.new(0, -200000, 0)
+	local position = cFrame:ToObjectSpace(
+		CFrame.new(originalCFrame.Position)
+	).Position
+
+	HumanoidRootPart.CFrame = cFrame
+	Humanoid.CameraOffset = position
+
+	RunService.RenderStepped:Wait()
+
+	HumanoidRootPart.CFrame = originalCFrame
+	Humanoid.CameraOffset = originalCameraOffset
+end)
+
+a[3] = LocalPlayer.CharacterAdded:Connect(function()
+	u7 = false
+	task.wait()
+	v9()
+end)
+
+_G.a = a
+
+v9()
+
 AddRightSwitch("Right switch 7", function(enabled) end)
 
 -- ================= Tab 2: Player =================
