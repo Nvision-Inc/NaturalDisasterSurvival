@@ -8,7 +8,6 @@ local t2 = {
 	can_resize = true
 }
 
-warn("running on Library version // " .. tostring(t1.version) .. "\n\r\n\t         _                     _                    ___ \r\n\t  __  __(_)  ___  ____  ____ _(_)___  ___     _   _|__ \\\r\n\t / / / / /  / _ \\/ __ \\/ __ `/ / __ \\/ _ \\   | | / /_/ /\r\n\t/ /_/ / /  /  __/ / / / /_/ / / / / /  __/   | |/ / __/ \r\n\t\\__,_/_/   \\___/_/ /_/\\__, /_/_/ /_/\\___/    |___/____/ \r\n\t\t\t\t\t\t/____/                             \r\n\r\n\tby Singularity (V3rm @ King Singularity) (Discord @ Singularity#5490)\r\n\t[Edited version by NV I S I O N]\r\n")
 
 local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
