@@ -3,11 +3,23 @@ local LocalPlayer = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
-local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/KaterHub-Inc/scripts/refs/heads/main/modules/UiEngineV2.lua"))()
+local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Nvision-Inc/NaturalDisasterSurvival/refs/heads/main/Imguiv2.lua"))()
 
-local t3 = { name = "NVISION KnifeOrzZ" }
+local t3 = { name = "NVISION" }
 
--- Window
+warn([[ running.. @4xpired @lynepikhigh
+
+_____  _____  ____   ____  _____   ______   _____   ___   ____  ______
+|_   \|_   _||_  _| |_  _||_   _|.' ____ \ |_   _|.'   `.|_   \|_   _|  
+  |   \ | |    \ \   / /    | |  | (___ \_|  | | /  .-.  \ |   \ | |    
+  | |\ \| |     \ \ / /     | |   _.____`.   | | | |   | | | |\ \| |    
+ _| |_\   |_     \ ' /     _| |_ | \____) | _| |_\  `-'  /_| |_\   |_   
+|_____|\____|     \_/     |_____| \______.'|_____|`.___.'|_____|\____|  
+                                                                                                 
+                                                                         
+
+                                                                        ]])
+
 local Window = lib:AddWindow(tostring(t3.name), {
 	main_color = Color3.fromRGB(41, 74, 122),
 	min_size = Vector2.new(350, 370),
@@ -15,7 +27,6 @@ local Window = lib:AddWindow(tostring(t3.name), {
 	can_resize = true
 })
 
--- ================= Tab 1: Scripts =================
 local Scripts, ScriptsFrame = Window:AddTab("Main")
 local HeaderLabel = Scripts:AddLabel("")
 
@@ -80,7 +91,7 @@ Row1:AddButton("Tptool", function()
 
     local Backpack = Player:WaitForChild("Backpack")
 
-    -- Prevent duplicates
+    
     if Backpack:FindFirstChild("Teleport Tool")
         or (Player.Character and Player.Character:FindFirstChild("Normal Teleport Tool")) then
         return
@@ -104,29 +115,44 @@ Row1:AddButton("Tptool", function()
     Tool.Parent = Backpack
 end)
 
-	
-	local CrouchExecuted = false
+Row1:AddButton("Get all Items", function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local Backpack = LocalPlayer:WaitForChild("Backpack")
 
-Row1:AddButton("Crouch", function()
-    if CrouchExecuted then
-        return
+    local ItemNames = {
+        "RedApple",
+        "Compass",
+        "GreenBalloon"
+    }
+
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if Player ~= LocalPlayer then
+            local OtherBackpack = Player:FindFirstChild("Backpack")
+
+            if OtherBackpack then
+                for _, ItemName in ipairs(ItemNames) do
+                    local Item = OtherBackpack:FindFirstChild(ItemName)
+
+                    if Item and not Backpack:FindFirstChild(ItemName) then
+                        local Success, Error = pcall(function()
+                            Item:Clone().Parent = Backpack
+                        end)
+
+                        if not Success then
+                            warn("[NVISION] Could not clone " .. ItemName .. ": " .. tostring(Error))
+                        end
+                    end
+                end
+            end
+        end
     end
 
-    CrouchExecuted = true
-
-    task.spawn(function()
-        local Success, Error = pcall(function()
-            loadstring(game:HttpGet(
-                "https://rawscripts.net/raw/Universal-Script-FE-R15-Crouch-Script-64510"
-            ))()
-        end)
-
-        if not Success then
-            warn("[Crouch Error]: " .. tostring(Error))
-        end
-    end)
+    print("[NVISION] Get All Items finished.")
 end)
-	
+
+
+
 local InfiniteJumpConnection
 
 Scripts:AddSwitch("Infinite Jump", function(enabled)
@@ -394,12 +420,12 @@ Scripts:AddSwitch("Disable Void", function(enabled)
 	end
 end)
 
--- Map functions folder with four buttons in one row
+
 local Folder = Scripts:AddFolder("   Map functions")
 
 local MapLabel = Folder:AddFolderLabel("Some features are only available on certain maps.")
-MapLabel.LayoutOrder = -1 -- keeps the label above the button row
-MapLabel.TextColor3 = Color3.fromRGB(255, 255, 0) -- yellow
+MapLabel.LayoutOrder = -1 
+MapLabel.TextColor3 = Color3.fromRGB(255, 255, 0) 
 
 local Buttons = {
 	Folder:AddButton("Launch", function()
@@ -439,14 +465,46 @@ end),
 	end),
 		
 	Folder:AddButton("Prison", function()
-		-- TODO
-	end),
-	Folder:AddButton("Train", function()
-		-- TODO
-	end),
+    if not game:GetService("Workspace").Structure:FindFirstChild("Prison Panic") then
+        return
+    end
+
+    local Target = workspace.Structure["Prison Panic"]:FindFirstChild("PrisonerAdmissionPart")
+
+    if not Target then
+        return
+    end
+
+    local Character = LocalPlayer.Character
+    local Root = Character and Character:FindFirstChild("HumanoidRootPart")
+
+    if Root then
+        Root.CFrame = Target.CFrame + Vector3.new(0, 3, 0)
+    end
+end),
+	Folder:AddButton("Factory", function()
+    if not workspace.Structure:FindFirstChild("Factory Frenzy") then
+        return
+    end
+
+    local Target = workspace.Structure["Factory Frenzy"]
+        :FindFirstChild("Building")
+        and workspace.Structure["Factory Frenzy"].Building:FindFirstChild("Picture")
+
+    if not Target then
+        return
+    end
+
+    local Character = LocalPlayer.Character
+    local Root = Character and Character:FindFirstChild("HumanoidRootPart")
+
+    if Root then
+        Root.CFrame = Target.CFrame + Vector3.new(0, 3, 0)
+    end
+end),
 }
 
--- The buttons live in the folder's content frame, so make a row inside that frame
+
 local Objects = Buttons[1].Parent
 
 local FolderRow = Instance.new("Frame")
@@ -907,7 +965,7 @@ AddRightSwitch("Anti fling", function(enabled)
     if enabled then
         antifling = RunService.Stepped:Connect(function()
             for _, player in ipairs(Players:GetPlayers()) do
-                if player ~= speaker and player.Character then
+                if player ~= LocalPlayer and player.Character then
                     for _, part in ipairs(player.Character:GetDescendants()) do
                         if part:IsA("BasePart") then
                             if OriginalCollision[part] == nil then
@@ -1066,13 +1124,773 @@ _G.a = a
 
 v9()
 
-AddRightSwitch("Right switch 7", function(enabled) end)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+local NoclipConnection
+local OriginalCollision = {}
+
+AddRightSwitch("No Collision", function(enabled)
+
+    if enabled then
+
+        OriginalCollision = {}
+
+        NoclipConnection = RunService.Stepped:Connect(function()
+
+            local Character = LocalPlayer.Character
+            if not Character then return end
+
+            for _, Part in ipairs(Character:GetDescendants()) do
+                if Part:IsA("BasePart") then
+
+                    if OriginalCollision[Part] == nil then
+                        OriginalCollision[Part] = Part.CanCollide
+                    end
+
+                    Part.CanCollide = false
+                end
+            end
+        end)
+
+    else
+
+        if NoclipConnection then
+            NoclipConnection:Disconnect()
+            NoclipConnection = nil
+        end
+
+        for Part, CanCollide in pairs(OriginalCollision) do
+            if Part and Part.Parent then
+                Part.CanCollide = CanCollide
+            end
+        end
+
+        table.clear(OriginalCollision)
+
+    end
+
+end)
 
 -- ================= Tab 2: Player =================
-local PlayerTab = Window:AddTab(LocalPlayer.DisplayName)
+--// PLAYERS TAB
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local PlayerTab, PlayerTabFrame = Window:AddTab("Players")
+
+--// SCROLLING FRAME
+local PlayerList = Instance.new("ScrollingFrame")
+PlayerList.Name = "PlayerList"-- left edge 20px in
+PlayerList.Size = UDim2.new(1, 10, 1, 0)      -- right edge 30px in
+PlayerList.BackgroundTransparency = 1
+PlayerList.BorderSizePixel = 0
+PlayerList.ScrollBarThickness = 4
+PlayerList.CanvasSize = UDim2.new(0, 0, 0, 0)
+PlayerList.ZIndex = 100
+PlayerList.Parent = PlayerTabFrame
+
+local Padding = Instance.new("UIPadding")
+Padding.PaddingTop = UDim.new(0, 5)
+Padding.PaddingLeft = UDim.new(0, 5)
+Padding.PaddingRight = UDim.new(0, 5)
+Padding.Parent = PlayerList
+
+local Layout = Instance.new("UIListLayout")
+Layout.Padding = UDim.new(0, 5)
+Layout.SortOrder = Enum.SortOrder.LayoutOrder
+Layout.Parent = PlayerList
+
+Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    PlayerList.CanvasSize = UDim2.new(
+        0, 0, 0, Layout.AbsoluteContentSize.Y + 10
+    )
+end)
+
+--// VIEW (CAMERA) LOGIC
+local Camera = workspace.CurrentCamera
+local Viewing = nil
+local ViewButtons = {}
+
+local function UpdateViewButtons()
+    for userId, btn in pairs(ViewButtons) do
+        local isViewing = Viewing and Viewing.UserId == userId
+        btn.Text = isViewing and "Stop" or "View"
+    end
+end
+
+local function StopViewing()
+    Viewing = nil
+
+    local Char = LocalPlayer.Character
+    local Hum = Char and Char:FindFirstChildOfClass("Humanoid")
+    if Hum then
+        Camera.CameraSubject = Hum
+    end
+
+    UpdateViewButtons()
+end
+
+local function ViewPlayer(Target)
+    local Char = Target.Character
+    local Hum = Char and Char:FindFirstChildOfClass("Humanoid")
+    if not Hum then return end
+
+    Viewing = Target
+    Camera.CameraSubject = Hum
+    UpdateViewButtons()
+end
+
+--// GOTO (TELEPORT) LOGIC
+local function GotoPlayer(Target)
+    local TargetChar = Target.Character
+    local TargetHRP = TargetChar and TargetChar:FindFirstChild("HumanoidRootPart")
+
+    local Char = LocalPlayer.Character
+    local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
+
+    if TargetHRP and HRP then
+        -- Stand 3 studs behind the target
+        HRP.CFrame = TargetHRP.CFrame * CFrame.new(0, 0, 3)
+    end
+end
+
+--// ADD PLAYER
+local PlayerRows = {}
+
+local function AddPlayer(Player)
+    if Player == LocalPlayer then
+        return
+    end
+
+    if PlayerRows[Player.UserId] then
+        return
+    end
+
+    local Row = Instance.new("Frame")
+    Row.Name = "Player_" .. Player.UserId
+    Row.Size = UDim2.new(1, -8, 0, 50)
+    Row.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    Row.BorderSizePixel = 0
+    Row.ZIndex = 101
+    Row.LayoutOrder = #PlayerList:GetChildren()
+    Row.Parent = PlayerList
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 5)
+    Corner.Parent = Row
+
+    --// AVATAR
+    local Avatar = Instance.new("ImageLabel")
+    Avatar.Name = "Avatar"
+    Avatar.Size = UDim2.fromOffset(40, 40)
+    Avatar.Position = UDim2.fromOffset(5, 5)
+    Avatar.BackgroundTransparency = 1
+    Avatar.ZIndex = 102
+    Avatar.Parent = Row
+
+    local AvatarCorner = Instance.new("UICorner")
+    AvatarCorner.CornerRadius = UDim.new(1, 0)
+    AvatarCorner.Parent = Avatar
+
+    --// DISPLAY NAME (narrower to leave room for the two buttons)
+    local DisplayName = Instance.new("TextLabel")
+    DisplayName.Size = UDim2.new(1, -190, 0, 23)
+    DisplayName.Position = UDim2.fromOffset(53, 3)
+    DisplayName.BackgroundTransparency = 1
+    DisplayName.Text = Player.DisplayName
+    DisplayName.TextColor3 = Color3.fromRGB(255, 255, 255)
+    DisplayName.TextSize = 13
+    DisplayName.Font = Enum.Font.GothamBold
+    DisplayName.TextXAlignment = Enum.TextXAlignment.Left
+    DisplayName.TextTruncate = Enum.TextTruncate.AtEnd
+    DisplayName.ZIndex = 102
+    DisplayName.Parent = Row
+
+    --// USERNAME
+    local Username = Instance.new("TextLabel")
+    Username.Size = UDim2.new(1, -190, 0, 18)
+    Username.Position = UDim2.fromOffset(53, 26)
+    Username.BackgroundTransparency = 1
+    Username.Text = "@" .. Player.Name
+    Username.TextColor3 = Color3.fromRGB(160, 160, 160)
+    Username.TextSize = 10
+    Username.Font = Enum.Font.Gotham
+    Username.TextXAlignment = Enum.TextXAlignment.Left
+    Username.TextTruncate = Enum.TextTruncate.AtEnd
+    Username.ZIndex = 102
+    Username.Parent = Row
+
+    --// GOTO BUTTON (left of View)
+    local GotoBtn = Instance.new("TextButton")
+    GotoBtn.Name = "GotoButton"
+    GotoBtn.Size = UDim2.fromOffset(56, 24)
+    GotoBtn.Position = UDim2.new(1, -128, 0.5, -12)
+    GotoBtn.BackgroundColor3 = Color3.fromRGB(52, 53, 56)
+    GotoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    GotoBtn.Font = Enum.Font.GothamMedium
+    GotoBtn.TextSize = 12
+    GotoBtn.Text = "Goto"
+    GotoBtn.BorderSizePixel = 0
+    GotoBtn.ZIndex = 103
+    GotoBtn.Parent = Row
+
+    local GotoCorner = Instance.new("UICorner")
+    GotoCorner.CornerRadius = UDim.new(0, 5)
+    GotoCorner.Parent = GotoBtn
+
+    GotoBtn.MouseButton1Click:Connect(function()
+        GotoPlayer(Player)
+    end)
+
+    --// VIEW BUTTON (right side, vertically centered)
+    local ViewBtn = Instance.new("TextButton")
+    ViewBtn.Name = "ViewButton"
+    ViewBtn.Size = UDim2.fromOffset(56, 24)
+    ViewBtn.Position = UDim2.new(1, -64, 0.5, -12)
+    ViewBtn.BackgroundColor3 = Color3.fromRGB(52, 53, 56)
+    ViewBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ViewBtn.Font = Enum.Font.GothamMedium
+    ViewBtn.TextSize = 12
+    ViewBtn.Text = "View"
+    ViewBtn.BorderSizePixel = 0
+    ViewBtn.ZIndex = 103
+    ViewBtn.Parent = Row
+
+    local ViewCorner = Instance.new("UICorner")
+    ViewCorner.CornerRadius = UDim.new(0, 5)
+    ViewCorner.Parent = ViewBtn
+
+    ViewBtn.MouseButton1Click:Connect(function()
+        if Viewing == Player then
+            StopViewing()
+        else
+            ViewPlayer(Player)
+        end
+    end)
+
+    ViewButtons[Player.UserId] = ViewBtn
+    PlayerRows[Player.UserId] = Row
+
+    --// LOAD AVATAR
+    task.spawn(function()
+        local Success, Image = pcall(function()
+            return Players:GetUserThumbnailAsync(
+                Player.UserId,
+                Enum.ThumbnailType.HeadShot,
+                Enum.ThumbnailSize.Size100x100
+            )
+        end)
+
+        if Success and Avatar.Parent then
+            Avatar.Image = Image
+        end
+    end)
+end
+
+--// REMOVE PLAYER
+local function RemovePlayer(Player)
+    if Viewing == Player then
+        StopViewing()
+    end
+
+    local Row = PlayerRows[Player.UserId]
+
+    if Row then
+        Row:Destroy()
+        PlayerRows[Player.UserId] = nil
+    end
+
+    ViewButtons[Player.UserId] = nil
+end
+
+--// LOAD CURRENT PLAYERS
+for _, Player in ipairs(Players:GetPlayers()) do
+    AddPlayer(Player)
+end
+
+--// JOIN / LEAVE
+Players.PlayerAdded:Connect(AddPlayer)
+Players.PlayerRemoving:Connect(RemovePlayer)
+
+
+local ExtraTab = Window:AddTab("Extra")
+
+ExtraTab:AddLabel('<font color="rgb(255, 255, 0)">       Extra modification features for your character</font>')
+
+local WALK_MIN, WALK_MAX, WALK_DEFAULT, WALK_STEP = 16, 160, 16, 10
+local JUMP_MIN, JUMP_MAX, JUMP_DEFAULT, JUMP_STEP = 50, 250, 50, 10
+
+local CurrentWalk = WALK_DEFAULT
+local CurrentJump = JUMP_DEFAULT
+
+local function ToPercent(value, min, max)
+	return (value - min) / (max - min) * 100
+end
+
+local function ApplyMovement()
+	local Char = LocalPlayer.Character
+	local Hum = Char and Char:FindFirstChildOfClass("Humanoid")
+	if Hum then
+		Hum.WalkSpeed = CurrentWalk
+		Hum.JumpPower = CurrentJump
+	end
+end
+
+local Walkspeed
+local Jumppower
+
+Walkspeed = ExtraTab:AddSlider("Walkspeed", function(value)
+	CurrentWalk = value
+	ApplyMovement()
+end, {
+	min = WALK_MIN,
+	max = WALK_MAX,
+	readonly = false
+})
+
+Jumppower = ExtraTab:AddSlider("Jumppower", function(value)
+	CurrentJump = value
+	ApplyMovement()
+end, {
+	min = JUMP_MIN,
+	max = JUMP_MAX,
+	readonly = false
+})
+
+-- Four buttons in one row
+local WalkMinusBtn = ExtraTab:AddButton("Walk -", function()
+	CurrentWalk = math.max(WALK_MIN, CurrentWalk - WALK_STEP)
+	Walkspeed:Set(ToPercent(CurrentWalk, WALK_MIN, WALK_MAX))
+	ApplyMovement()
+end)
+
+local WalkPlusBtn = ExtraTab:AddButton("Walk +", function()
+	CurrentWalk = math.min(WALK_MAX, CurrentWalk + WALK_STEP)
+	Walkspeed:Set(ToPercent(CurrentWalk, WALK_MIN, WALK_MAX))
+	ApplyMovement()
+end)
+
+local JumpMinusBtn = ExtraTab:AddButton("Jump -", function()
+	CurrentJump = math.max(JUMP_MIN, CurrentJump - JUMP_STEP)
+	Jumppower:Set(ToPercent(CurrentJump, JUMP_MIN, JUMP_MAX))
+	ApplyMovement()
+end)
+
+local JumpPlusBtn = ExtraTab:AddButton("Jump +", function()
+	CurrentJump = math.min(JUMP_MAX, CurrentJump + JUMP_STEP)
+	Jumppower:Set(ToPercent(CurrentJump, JUMP_MIN, JUMP_MAX))
+	ApplyMovement()
+end)
+
+local FourButtons = { WalkMinusBtn, WalkPlusBtn, JumpMinusBtn, JumpPlusBtn }
+
+local ButtonRow = Instance.new("Frame")
+ButtonRow.Name = "MovementButtonRow"
+ButtonRow.BackgroundTransparency = 1
+ButtonRow.Size = UDim2.new(1, 0, 0, 24)
+ButtonRow.LayoutOrder = WalkMinusBtn.LayoutOrder
+ButtonRow.Parent = WalkMinusBtn.Parent
+
+local ButtonRowLayout = Instance.new("UIListLayout")
+ButtonRowLayout.FillDirection = Enum.FillDirection.Horizontal
+ButtonRowLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ButtonRowLayout.Padding = UDim.new(0, 4)
+ButtonRowLayout.Parent = ButtonRow
+
+for _, btn in ipairs(FourButtons) do
+	btn.Parent = ButtonRow
+	btn.Size = UDim2.new(0.25, -4, 1, 0)
+end
 
 
 
+
+-- Five switches
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local speaker = Players.LocalPlayer
+
+local function getRoot(character)
+    if not character then return nil end
+
+    return character:FindFirstChild("HumanoidRootPart")
+end
+
+local vfly = false
+local iyflyspeed = 2
+local vehicleflyspeed = 2
+
+local velocityHandlerName = "VelocityHandler"
+local gyroHandlerName = "GyroHandler"
+local FLYING = false
+local mfly1, mfly2
+
+local velocityHandlerName = "VelocityHandler"
+local gyroHandlerName = "GyroHandler"
+
+local function StartFly()
+    FLYING = true
+
+    local root = getRoot(speaker.Character)
+    local camera = workspace.CurrentCamera
+    local v3none = Vector3.new()
+    local v3zero = Vector3.new(0, 0, 0)
+    local v3inf = Vector3.new(9e9, 9e9, 9e9)
+
+    local controlModule = require(
+        speaker.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule")
+    )
+
+    local bv = Instance.new("BodyVelocity")
+    bv.Name = velocityHandlerName
+    bv.Parent = root
+    bv.MaxForce = v3zero
+    bv.Velocity = v3zero
+
+    local bg = Instance.new("BodyGyro")
+    bg.Name = gyroHandlerName
+    bg.Parent = root
+    bg.MaxTorque = v3inf
+    bg.P = 1000
+    bg.D = 50
+
+    mfly1 = speaker.CharacterAdded:Connect(function(character)
+        root = getRoot(character)
+        if not root then return end
+
+        local newBv = Instance.new("BodyVelocity")
+        newBv.Name = velocityHandlerName
+        newBv.Parent = root
+        newBv.MaxForce = v3zero
+        newBv.Velocity = v3zero
+
+        local newBg = Instance.new("BodyGyro")
+        newBg.Name = gyroHandlerName
+        newBg.Parent = root
+        newBg.MaxTorque = v3inf
+        newBg.P = 1000
+        newBg.D = 50
+    end)
+
+    mfly2 = RunService.RenderStepped:Connect(function()
+        root = getRoot(speaker.Character)
+        camera = workspace.CurrentCamera
+
+        if not FLYING then return end
+
+        if speaker.Character and root
+        and root:FindFirstChild(velocityHandlerName)
+        and root:FindFirstChild(gyroHandlerName) then
+
+            local humanoid = speaker.Character:FindFirstChildWhichIsA("Humanoid")
+            local VelocityHandler = root:FindFirstChild(velocityHandlerName)
+            local GyroHandler = root:FindFirstChild(gyroHandlerName)
+
+            VelocityHandler.MaxForce = v3inf
+            GyroHandler.MaxTorque = v3inf
+
+            if not vfly then
+                humanoid.PlatformStand = true
+            end
+
+            GyroHandler.CFrame = camera.CFrame
+            VelocityHandler.Velocity = v3none
+
+            local direction = controlModule:GetMoveVector()
+            local speed = (vfly and vehicleflyspeed or iyflyspeed) * 50
+
+            VelocityHandler.Velocity =
+                camera.CFrame.RightVector * direction.X * speed
+                - camera.CFrame.LookVector * direction.Z * speed
+        end
+    end)
+end
+
+local function StopFly()
+    FLYING = false
+
+    if mfly1 then
+        mfly1:Disconnect()
+        mfly1 = nil
+    end
+
+    if mfly2 then
+        mfly2:Disconnect()
+        mfly2 = nil
+    end
+
+    local root = getRoot(speaker.Character)
+
+    if root then
+        local bv = root:FindFirstChild(velocityHandlerName)
+        local bg = root:FindFirstChild(gyroHandlerName)
+
+        if bv then bv:Destroy() end
+        if bg then bg:Destroy() end
+    end
+
+    local humanoid = speaker.Character
+        and speaker.Character:FindFirstChildWhichIsA("Humanoid")
+
+    if humanoid then
+        humanoid.PlatformStand = false
+    end
+end
+
+ExtraTab:AddSwitch("Fly", function(state)
+    if state then
+        StartFly()
+    else
+        StopFly()
+    end
+end)
+
+            --// VEHICLE FLY
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+local isFlying = false
+local flySpeed = 3
+
+local bodyVelocity
+local bodyGyro
+local loopConnection
+
+ExtraTab:AddSwitch("Vehicle Fly", function(state)
+
+    if state then
+        local character = player.Character
+        if not character then return end
+
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        local root = character:FindFirstChild("HumanoidRootPart")
+
+        if not humanoid or not root then return end
+
+        local targetPart = humanoid.SeatPart
+            and humanoid.SeatPart:IsA("VehicleSeat")
+            and humanoid.SeatPart
+            or root
+
+        isFlying = true
+
+        bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        bodyVelocity.Velocity = Vector3.zero
+        bodyVelocity.Parent = targetPart
+
+        bodyGyro = Instance.new("BodyGyro")
+        bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        bodyGyro.P = 1000
+        bodyGyro.D = 50
+        bodyGyro.CFrame = targetPart.CFrame
+        bodyGyro.Parent = targetPart
+
+        local PlayerModule = require(
+            player.PlayerScripts:WaitForChild("PlayerModule")
+        )
+        local controls = PlayerModule:GetControls()
+
+        loopConnection = RunService.RenderStepped:Connect(function()
+            if not isFlying or not targetPart.Parent then
+                return
+            end
+
+            local camera = workspace.CurrentCamera
+            local direction = controls:GetMoveVector()
+
+            local look = camera.CFrame.LookVector * -direction.Z
+            local side = camera.CFrame.RightVector * direction.X
+
+            local movement = look + side
+
+            if movement.Magnitude > 0 then
+                movement = movement.Unit
+            end
+
+            bodyVelocity.Velocity = movement * (flySpeed * 25)
+            bodyGyro.CFrame = camera.CFrame
+        end)
+
+    else
+        isFlying = false
+
+        if loopConnection then
+            loopConnection:Disconnect()
+            loopConnection = nil
+        end
+
+        if bodyVelocity then
+            bodyVelocity:Destroy()
+            bodyVelocity = nil
+        end
+
+        if bodyGyro then
+            bodyGyro:Destroy()
+            bodyGyro = nil
+        end
+    end
+end)
+
+
+--// FLOAT SWITCH
+local FloatConnection
+local FloatPlatform
+
+ExtraTab:AddSwitch("Float", function(enabled)
+
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+
+    local Player = Players.LocalPlayer
+
+    if enabled then
+        local Character = Player.Character or Player.CharacterAdded:Wait()
+        local Root = Character:WaitForChild("HumanoidRootPart")
+
+        -- Create platform
+        FloatPlatform = Instance.new("Part")
+        FloatPlatform.Name = "FloatPlatform"
+        FloatPlatform.Size = Vector3.new(6, 0.5, 6)
+        FloatPlatform.Transparency = 0.3
+        FloatPlatform.Anchored = true
+        FloatPlatform.CanCollide = true
+        FloatPlatform.Parent = workspace
+
+        FloatConnection = RunService.Heartbeat:Connect(function()
+            if Root and Root.Parent and FloatPlatform then
+                FloatPlatform.CFrame = Root.CFrame * CFrame.new(0, -3.5, 0)
+            end
+        end)
+
+    else
+        if FloatConnection then
+            FloatConnection:Disconnect()
+            FloatConnection = nil
+        end
+
+        if FloatPlatform then
+            FloatPlatform:Destroy()
+            FloatPlatform = nil
+        end
+    end
+end)
+--// SWIMMING SWITCH
+local swimming = false
+local oldgrav = workspace.Gravity
+local swimbeat = nil
+local gravReset = nil
+local SwimHumanoid = nil
+
+ExtraTab:AddSwitch("Swim", function(enabled)
+
+    local Player = game:GetService("Players").LocalPlayer
+    local UserInputService = game:GetService("UserInputService")
+    local RunService = game:GetService("RunService")
+
+    if enabled then
+        if swimming then return end
+
+        local Character = Player.Character
+        if not Character then return end
+
+        SwimHumanoid = Character:FindFirstChildWhichIsA("Humanoid")
+        local Root = Character:FindFirstChild("HumanoidRootPart")
+
+        if not SwimHumanoid or not Root then return end
+
+        oldgrav = workspace.Gravity
+        workspace.Gravity = 0
+
+        swimming = true
+
+        gravReset = SwimHumanoid.Died:Connect(function()
+            workspace.Gravity = oldgrav
+            swimming = false
+
+            if swimbeat then
+                swimbeat:Disconnect()
+                swimbeat = nil
+            end
+        end)
+
+        local enums = Enum.HumanoidStateType:GetEnumItems()
+
+        for _, state in pairs(enums) do
+            if state ~= Enum.HumanoidStateType.None then
+                SwimHumanoid:SetStateEnabled(state, false)
+            end
+        end
+
+        SwimHumanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+
+        swimbeat = RunService.Heartbeat:Connect(function()
+            if not Root.Parent or not SwimHumanoid.Parent then return end
+
+            if SwimHumanoid.MoveDirection.Magnitude > 0
+                or UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+                return
+            end
+
+            Root.Velocity = Vector3.zero
+        end)
+
+    else
+        swimming = false
+
+        workspace.Gravity = oldgrav
+
+        if swimbeat then
+            swimbeat:Disconnect()
+            swimbeat = nil
+        end
+
+        if gravReset then
+            gravReset:Disconnect()
+            gravReset = nil
+        end
+
+        if SwimHumanoid and SwimHumanoid.Parent then
+            for _, state in pairs(Enum.HumanoidStateType:GetEnumItems()) do
+                if state ~= Enum.HumanoidStateType.None then
+                    SwimHumanoid:SetStateEnabled(state, true)
+                end
+            end
+
+            SwimHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
+
+        SwimHumanoid = nil
+    end
+end)
+
+
+ExtraTab:AddSwitch("Extra switch 5", function(enabled) end)
+
+-- Start both sliders at their defaults
+Walkspeed:Set(ToPercent(WALK_DEFAULT, WALK_MIN, WALK_MAX))
+Jumppower:Set(ToPercent(JUMP_DEFAULT, JUMP_MIN, JUMP_MAX))
+
+ExtraTab:AddButton("Set Default", function()
+	CurrentWalk = WALK_DEFAULT
+	CurrentJump = JUMP_DEFAULT
+	Walkspeed:Set(ToPercent(CurrentWalk, WALK_MIN, WALK_MAX))
+	Jumppower:Set(ToPercent(CurrentJump, JUMP_MIN, JUMP_MAX))
+	ApplyMovement()
+end)
+
+-- Reapply speed and jump after respawning
+LocalPlayer.CharacterAdded:Connect(function(Char)
+	local Hum = Char:WaitForChild("Humanoid")
+	Hum.WalkSpeed = CurrentWalk
+	Hum.JumpPower = CurrentJump
+end)
 
 
 
